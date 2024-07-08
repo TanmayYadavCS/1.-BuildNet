@@ -8,7 +8,7 @@ class Value:
         self.data = data                    # value storage
         self.grad = 0                       # gradient wrt to the last term
         # internal variables used for autograd construction
-        self.backward = lambda: None        # backprop technique
+        self._backward = lambda: None        # backprop technique
         self._prev = set(_children)         # children nodes
         self._op = _op                      # operation that originated the node
     
@@ -51,16 +51,6 @@ class Value:
         out._backward = _backward
         return out
     
-    def exp(self):
-        """Returns value processed through the natural exponential function."""
-        out = Value(math.exp(self.data), (self,), 'e')
-
-        # backprop
-        def _backward():
-            self.grad += math.exp(self.data) * out.grad
-        # call it
-        out._backward = _backward
-        return out
 
     def relu(self):
         """Returns value processed through the ReLU smoothing function."""
@@ -75,7 +65,7 @@ class Value:
     
     def sigmoid(self):
         """Returns value processed through the Sigmoid smoothing function."""
-        out = Value(1 / (1 + self.exp(-1*self.data)), (self,), 'Sigmoid')
+        out = Value(1 / (1 + math.exp(-self.data)), (self,), 'Sigmoid')
 
         # backprop
         def _backward():
